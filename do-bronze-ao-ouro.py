@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Case Databricks — Tratamento de dados (bronze → ouro)
+# MAGIC # Case Databricks — Tratamento de dados (bronze ao ouro)
 # MAGIC
 # MAGIC **Fonte: (Desafio de tratamento por regras de negócio) - Emerson Costa**
 # MAGIC
@@ -75,7 +75,7 @@
 # MAGIC
 # MAGIC **13 regras de negócio, 40 linhas sujas** (datas furadas, CPF com letra, estado `InvalidState`, typos de país), uma única query entregando o ouro limpo, com uma **auditoria coluna a coluna** que corrigiu a própria referência: eram 19 `InvalidState`, não 18.
 # MAGIC
-# MAGIC **Stack:** Databricks SQL (serverless; o cluster 14.3 LTS e as 4 spark configs do enunciado ficam documentados como design de referência), Spark SQL semantics (NULL de 3 valores, escalar vs agregação), CASE, TRY_TO_DATE, SUBSTRING/CONCAT, REGEXP_LIKE com âncoras e escape, TRIM/UPPER, derived table, COUNT_IF, sentinelas (00000-000, 1900-00-00, 000.000.000-00) com trade-off de tipo documentado, medallion conceitual (bronze preservado, ouro limpo).
+# MAGIC **Stack:** Databricks SQL (serverless; o cluster 14.3 LTS e as 4 spark configs do enunciado ficam documentados como design de referência), Spark SQL semantics (NULL de 3 valores, escalar vs agregação), CASE, TRY_TO_DATE, SUBSTRING/CONCAT, REGEXP_LIKE com âncoras e escape, TRIM/UPPER, derived table, COUNT_IF, sentinelas (`00000-000`, `1900-00-00`, `000.000.000-00`) com trade-off de tipo documentado, medallion conceitual (bronze preservado, ouro limpo).
 
 # COMMAND ----------
 
@@ -284,7 +284,24 @@
 # MAGIC - **País:** mapa de typos (`BRAZIL`, `BRAZIIL`, `BRASIIL`, `BRRAZIL`, ...) vira `Brasil`; `InvalidCountry` vira NULL. Separa typo inequívoco (corrige) de sentinela de linha inválida (NULL).
 # MAGIC - **`idade_real`:** `YEAR(CURRENT_DATE()) - YEAR(TRY_TO_DATE(data_nascimento))` guardado por `IS NOT NULL`. Data inválida não gera idade.
 # MAGIC
-# MAGIC **Contagens da auditoria (40 linhas, ouro coluna a coluna):** total=40 | idade=4 | email=1 | telefone=0 | cep=10 | contratação=6 | nascimento=10 | cpf=10 | salario=8 | pontuação=8 | divida=11 | gênero=9 | estado_nome=19 | país=18 | idade_real=10.
+# MAGIC **Contagens da auditoria (40 linhas, ouro coluna a coluna):**
+# MAGIC
+# MAGIC | Coluna | Tratamento | Saída |
+# MAGIC |---|---|---|
+# MAGIC | idade | NULL se < 0 | 4 NULL |
+# MAGIC | email | NULL sem `@` | 1 NULL |
+# MAGIC | telefone | `(XX) AAAA-BBBB` | 0 NULL |
+# MAGIC | cep | sentinela `00000-000` | 10 |
+# MAGIC | data_contratacao | sentinela `1900-00-00` | 6 |
+# MAGIC | data_nascimento | sentinela `1900-00-00` | 10 |
+# MAGIC | cpf | normalizado + sentinela | 10 |
+# MAGIC | salario | NULL se < 0 | 8 NULL |
+# MAGIC | pontuacao_credito | NULL fora de 300–850 | 8 NULL |
+# MAGIC | divida | NULL se < 0 | 11 NULL |
+# MAGIC | genero | NULL fora de M/F | 9 NULL |
+# MAGIC | estado_nome | 27 UFs, senão NULL | 19 NULL |
+# MAGIC | pais | `Brasil`, senão NULL | 18 NULL |
+# MAGIC | idade_real | só com data válida | 10 NULL |
 # MAGIC
 # MAGIC **Achado:** a auditoria corrigiu a referência. Eu esperava 18 `InvalidState`; os dados dizem 19. São 18 `InvalidCountry`: 18 linhas coincidem, 1 tem estado inválido mas país válido. A contagem dos dados vale mais que a minha estimativa.
 # MAGIC
