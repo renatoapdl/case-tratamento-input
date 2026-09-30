@@ -36,4 +36,4 @@ Notebook, SQL e notas de decisão: [github.com/renatoapdl/case-tratamento-input]
 
 ## Competências a associar a este projeto no LinkedIn
 
-Databricks · Apache Spark · Spark SQL · SQL · Data Quality · Data Validation · Data Cleansing · ETL · Data Engineering
+Azure Databricks · Apache Spark · Spark SQL · SQL · Data Quality · Data Validation · Data Cleansing · ETL · Data Engineering
