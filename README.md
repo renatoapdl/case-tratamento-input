@@ -4,7 +4,7 @@
 [![Apache Spark](https://img.shields.io/badge/Apache%20Spark-FDEE21?style=for-the-badge&logo=apachespark&logoColor=black)](https://spark.apache.org/)
 [![Spark SQL](https://img.shields.io/badge/Spark%20SQL-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white)](https://spark.apache.org/sql/)
 
-Desafio de processo seletivo (fonte: Emerson Costa) resolvido em Databricks SQL. A base tem 40 registros sujos, cada um quebrando uma ou mais das 13 regras de negócio, e tudo é tratado em uma única consulta, com auditoria coluna a coluna no final.
+Desafio (fonte: Emerson Costa) resolvido em Databricks SQL. A base tem 40 registros sujos, cada um quebrando uma ou mais das 13 regras de negócio, e tudo é tratado em uma única consulta, com auditoria coluna a coluna no final.
 
 ## Contexto e problema
 
