@@ -9,17 +9,15 @@
 <details>
 <summary>Ouro: resultado coluna a coluna (22 colunas, top 10 registros)</summary>
 
-![Ouro 1/6: id | nome | idade | email](imagens/print_ouro_1.png)
+![Ouro 1/5: id | nome | idade | email | telefone](imagens/print_ouro_1.png)
 
-![Ouro 2/6: telefone | endereco | cidade | estado](imagens/print_ouro_2.png)
+![Ouro 2/5: endereco | cidade | estado | estado_nome | cep](imagens/print_ouro_2.png)
 
-![Ouro 3/6: estado_nome | cep | pais | empresa](imagens/print_ouro_3.png)
+![Ouro 3/5: pais | empresa | cargo | salario | data_contratacao](imagens/print_ouro_3.png)
 
-![Ouro 4/6: cargo | salario | data_contratacao | data_nascimento](imagens/print_ouro_4.png)
+![Ouro 4/5: data_nascimento | idade_real | cpf | cartao_credito | pontuacao_credito](imagens/print_ouro_4.png)
 
-![Ouro 5/6: idade_real | cpf | cartao_credito | pontuacao_credito](imagens/print_ouro_5.png)
-
-![Ouro 6/6: divida | genero](imagens/print_ouro_6.png)
+![Ouro 5/5: divida | genero](imagens/print_ouro_5.png)
 
 </details>
 
