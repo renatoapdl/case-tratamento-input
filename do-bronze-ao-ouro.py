@@ -73,11 +73,9 @@
 # MAGIC ◦ Pergunta: Verifique se todos os países são válidos e corrigidos para 'Brasil'. Se não, substitua-os por NULL.
 # MAGIC ◦ Regra: Países que não são 'Brasil' ou estão incorretos devem ser substituídos ou corrigidos para 'Brasil'.
 # MAGIC
-# MAGIC **13 regras de negócio, 40 linhas sujas** (datas furadas, CPF grafado errado, InvalidState, typos de país), um único SELECT entregando o ouro limpo.
+# MAGIC **13 regras de negócio, 40 linhas sujas** (datas furadas, CPF com letra, estado `InvalidState`, typos de país), uma única query entregando o ouro limpo, com uma **auditoria coluna a coluna** que corrigiu a própria referência: eram 19 `InvalidState`, não 18.
 # MAGIC
-# MAGIC **Auditoria coluna-a-coluna.** 
-# MAGIC
-# MAGIC **Stack:** Databricks SQL (serverless), Spark SQL semantics (3-valoervedade NULL, funções escalares vs agregação), CASE, TRY_TO_DATE/cast, SUBSTR/concat de formatação, regexp_like com âncoras+escape, TRIM/UPPER, derived table, COUNT_IF, medallion conceitual (bronze preservado → ouro), adoção de sentinela (00000-000, 1900-00-00, 000.000.000-00) com trade-off de tipo documentado.
+# MAGIC **Stack:** Databricks SQL (serverless; o cluster 14.3 LTS e as 4 spark configs do enunciado ficam documentados como design de referência), Spark SQL semantics (NULL de 3 valores, escalar vs agregação), CASE, TRY_TO_DATE, SUBSTRING/CONCAT, REGEXP_LIKE com âncoras e escape, TRIM/UPPER, derived table, COUNT_IF, sentinelas (00000-000, 1900-00-00, 000.000.000-00) com trade-off de tipo documentado, medallion conceitual (bronze preservado, ouro limpo).
 
 # COMMAND ----------
 
@@ -274,10 +272,22 @@
 # MAGIC %md
 # MAGIC #NOTAS
 # MAGIC
-# MAGIC **Adaptação serverless** (cluster/14.3 LTS/4 spark configs documentadas como design de referência, não executáveis no plano grátis);
+# MAGIC **Adaptação serverless:** o enunciado pedia cluster `cluster_desafio_seunome` (Databricks Runtime 14.3 LTS) + 4 Spark configs; a Community Edition hoje é Free Edition (serverless), sem cluster clássico. As configs ficam como design de referência; execução validada no modelo serverless.
 # MAGIC
-# MAGIC **Decisões:** email por contrato | telefone por tamanho | sentinela de CEP literal | data 1900-00-00 em STRING (trade-off de tipo) | CPF normalizado + sentinela | estado 27 UFs + ELSE NULL | país typos→Brasil/InvalidCountry→NULL | idade_real com try_to_date+IS NULL;
+# MAGIC **Decisões por regra (contrato × dado):**
+# MAGIC - **Email:** o contrato pede só "conter `@`". `joaosilva@`, `carlossantos@invalido` e `luciaalves@@exemplo.com` passam. Validação estrita seria um PLUS, mas foge do contrato.
+# MAGIC - **Telefone:** por tamanho (`LENGTH = 10`). Os 40 passam, 0 NULLs. Regra preventiva, não corretiva.
+# MAGIC - **CEP:** regex `^[0-9]{5}-[0-9]{3}$` (âncoras) + sentinela `00000-000` (rejeita `20000-ABC`, `01000-0A0`).
+# MAGIC - **Datas:** sentinela `1900-00-00` em STRING. O enunciado pede DATE, mas dia 00 não existe em DATE: `TRY_TO_DATE('1900-00-00') = NULL`. Trade-off de tipo assumido e documentado.
+# MAGIC - **CPF:** `^[0-9]{11}$` (pega letra/tamanho); válidos normalizados `000.000.000-00`, inválidos para sentinela.
+# MAGIC - **Estado:** `TRIM` + coluna nova `estado_nome` com as 27 UFs, `ELSE NULL`. Portão semântico vale mais que o estrutural: `InvalidState` vira NULL sem depender de contagem.
+# MAGIC - **País:** mapa de typos (`BRAZIL`, `BRAZIIL`, `BRASIIL`, `BRRAZIL`, ...) vira `Brasil`; `InvalidCountry` vira NULL. Separa typo inequívoco (corrige) de sentinela de linha inválida (NULL).
+# MAGIC - **`idade_real`:** `YEAR(CURRENT_DATE()) - YEAR(TRY_TO_DATE(data_nascimento))` guardado por `IS NOT NULL`. Data inválida não gera idade.
 # MAGIC
-# MAGIC **Contagens da auditoria**
+# MAGIC **Contagens da auditoria (40 linhas, ouro coluna a coluna):** total=40 | idade=4 | email=1 | telefone=0 | cep=10 | contratação=6 | nascimento=10 | cpf=10 | salario=8 | pontuação=8 | divida=11 | gênero=9 | estado_nome=19 | país=18 | idade_real=10.
 # MAGIC
-# MAGIC **As linhas "fora de escopo":** (nome/cargo em branco) verbatim.
+# MAGIC **Achado:** a auditoria corrigiu a referência. Eu esperava 18 `InvalidState`; os dados dizem 19. São 18 `InvalidCountry`: 18 linhas coincidem, 1 tem estado inválido mas país válido. A contagem dos dados vale mais que a minha estimativa.
+# MAGIC
+# MAGIC **Idempotência:** roda e reroda. `CREATE OR REPLACE TABLE` + `INSERT` recriam o bronze, o ouro existe só na saída do SELECT, a auditoria valida de novo. Reproduzir é rodar as 4 células em ordem.
+# MAGIC
+# MAGIC **Fora de escopo:** `nome`/`cargo` em branco ficam verbatim. Não se inventa regra onde o contrato não pediu.
