@@ -73,7 +73,7 @@
 # MAGIC ◦ Pergunta: Verifique se todos os países são válidos e corrigidos para 'Brasil'. Se não, substitua-os por NULL.
 # MAGIC ◦ Regra: Países que não são 'Brasil' ou estão incorretos devem ser substituídos ou corrigidos para 'Brasil'.
 # MAGIC
-# MAGIC **13 regras de negócio, 40 linhas sujas** (datas furadas, CPF com letra, estado `InvalidState`, typos de país), uma única query entregando o ouro limpo, com uma **auditoria coluna a coluna** que corrigiu a própria referência: eram 19 `InvalidState`, não 18.
+# MAGIC **13 regras de negócio, 40 linhas sujas** (datas furadas, CPF com letra, estado `InvalidState`, typos de país), uma única query entregando o ouro limpo, com uma **auditoria coluna a coluna** (19 `InvalidState` e 18 `InvalidCountry`).
 # MAGIC
 # MAGIC **Stack:** Databricks SQL (serverless; o cluster 14.3 LTS e as 4 spark configs do enunciado ficam documentados como design de referência), Spark SQL semantics (NULL de 3 valores, escalar vs agregação), CASE, TRY_TO_DATE, SUBSTRING/CONCAT, REGEXP_LIKE com âncoras e escape, TRIM/UPPER, derived table, COUNT_IF, sentinelas (`00000-000`, `1900-00-00`, `000.000.000-00`) com trade-off de tipo documentado, medallion conceitual (bronze preservado, ouro limpo).
 
@@ -303,7 +303,7 @@
 # MAGIC | pais | `Brasil`, senão NULL | 18 NULL |
 # MAGIC | idade_real | só com data válida | 10 NULL |
 # MAGIC
-# MAGIC **Achado:** a auditoria corrigiu a referência. Eu esperava 18 `InvalidState`; os dados dizem 19. São 18 `InvalidCountry`: 18 linhas coincidem, 1 tem estado inválido mas país válido. A contagem dos dados vale mais que a minha estimativa.
+# MAGIC **Achado:** 19 `InvalidState` contra 18 `InvalidCountry`: 18 linhas coincidem, 1 tem estado inválido e país válido.
 # MAGIC
 # MAGIC **Idempotência:** roda e reroda. `CREATE OR REPLACE TABLE` + `INSERT` recriam o bronze, o ouro existe só na saída do SELECT, a auditoria valida de novo. Reproduzir é rodar as 4 células em ordem.
 # MAGIC

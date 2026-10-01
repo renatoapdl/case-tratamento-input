@@ -21,8 +21,6 @@ A Community Edition hoje é Free Edition (serverless) e não cria cluster cláss
 
 A auditoria valida o ouro coluna a coluna com derived table e `COUNT_IF`.
 
-Ela corrigiu a referência: eu esperava 18 `InvalidState`, o certo é 19. Vale a contagem dos dados, não a minha estimativa.
-
 As sentinelas quase sempre coincidem: 19 estados inválidos contra 18 países inválidos, com 18 linhas em comum. Uma linha tem estado inválido e país válido.
 
 Campos fora do escopo das regras (`nome`, `cargo`, `cidade` em branco) ficaram como estavam. Não se inventa regra onde o contrato não pediu.

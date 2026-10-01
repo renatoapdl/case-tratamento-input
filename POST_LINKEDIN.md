@@ -4,7 +4,7 @@ Rascunho para anunciar o case. Adaptado do registro em `POST_DIARIO.md`.
 
 ---
 
-**O dia em que a auditoria corrigiu a minha própria referência**
+**Case Databricks: do bronze ao ouro em uma única consulta SQL**
 
 Montei um case de tratamento de dados em Databricks SQL a partir de um desafio real de processo seletivo.
 
@@ -22,7 +22,7 @@ O que eu entreguei:
 - normalização de telefone `(XX) AAAA-BBBB`, país `Brasil` com mapa de typos e nome completo do estado (27 UFs)
 - auditoria coluna a coluna com derived table
 
-E a auditoria me corrigiu: eu esperava 18 estados inválidos, os dados diziam 19. Confiei nos dados, não na minha estimativa.
+E a auditoria mostra: 19 estados inválidos e 18 países inválidos. Em 18 linhas ambos ocorrem; em 1 linha só o estado é inválido.
 
 Dado sujo não entra. E quando entra, a gente descobre e documenta.
 

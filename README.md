@@ -47,7 +47,7 @@ total=40 | idade=4 | email=1 | telefone=0 | cep=10 | contratação=6 | nasciment
 cpf=10 | salario=8 | pontuação=8 | divida=11 | gênero=9 | estado_nome=19 | país=18 | idade_real=10
 ```
 
-Um destaque: a auditoria corrigiu a própria referência. Eu esperava 18 `InvalidState`; os dados mostram 19.
+Um destaque: 19 estados inválidos contra 18 países inválidos. Em 18 linhas os dois coincidem; em 1 só o estado é inválido.
 
 ## Decisões de engenharia
 
